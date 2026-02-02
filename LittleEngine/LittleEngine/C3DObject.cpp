@@ -1,8 +1,3 @@
-/// \file	C3DObject.cpp
-///	\date	2024/12/28
-///	\author	Marc LE RENARD / FOKS Lab - Copyright 2024
-/// 
-
 #include "stdafx.h"
 #include "C3DObject.h"
 

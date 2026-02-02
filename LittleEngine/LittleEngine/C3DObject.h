@@ -1,8 +1,3 @@
-/// \file	C3DObject.h
-///	\date	2024/12/28
-///	\author	Marc LE RENARD / FOKS Lab - Copyright 2024
-/// 
-
 #ifndef _3DOBJECT_
 #define _3DOBJECT_
 

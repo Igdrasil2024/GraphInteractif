@@ -1,6 +1,7 @@
 #include "Utils.h"
 #include "CLittleRaytracer.h"
 #include "CSphere.h"
+#include "ComplexObj.h"
 #include <omp.h>
 
 LittleRaytracer::LittleRaytracer(glm::ivec2 p_outputRes) :
@@ -101,6 +102,14 @@ int LittleRaytracer::init()
 		m_objectList.push_back(sphere);
 	}
 
+	{
+		ComplexObj* obj = new ComplexObj("");
+		obj->getMaterialPtr()->color = glm::vec3(0.8f, 0.8f, 0.8f);
+		obj->getMaterialPtr()->roughness = 0.2f;
+		obj->getMaterialPtr()->metallic = 0.0f;
+		obj->getMaterialPtr()->lightIntensity = 0.0f;
+		m_objectList.push_back(obj);
+	}
 
 
 	
