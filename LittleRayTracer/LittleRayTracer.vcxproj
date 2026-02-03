@@ -163,6 +163,7 @@
     <ClInclude Include="CCamera.h" />
     <ClInclude Include="CEntity3D.h" />
     <ClInclude Include="Collider.h" />
+    <ClInclude Include="ComplexObj.h" />
     <ClInclude Include="CRayCastResult.h" />
     <ClInclude Include="CLittleRaytracer.h" />
     <ClInclude Include="CMaterial.h" />
@@ -174,6 +175,7 @@
     <ClCompile Include="CCamera.cpp" />
     <ClCompile Include="CEntity3D.cpp" />
     <ClCompile Include="Collider.cpp" />
+    <ClCompile Include="ComplexObj.cpp" />
     <ClCompile Include="CRayCastResult.cpp" />
     <ClCompile Include="CLittleRaytracer.cpp" />
     <ClCompile Include="CMaterial.cpp" />

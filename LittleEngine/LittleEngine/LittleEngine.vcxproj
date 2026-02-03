@@ -59,6 +59,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalOptions>/Zm200 %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(SolutionDir)LittleRayTracer/ThirdPartyLibs/glm/glm;$(SolutionDir)LittleRayTracer/ThirdPartyLibs/SDL2-2.0.18/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

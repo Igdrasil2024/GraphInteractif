@@ -11,21 +11,22 @@
 // SDL 
 #ifdef WIN32
 	#include <windows.h>
-	#include "../thirdPartyLibs/SDL2-2.0.5/include/SDL_syswm.h"
+	#include "../../LittleRayTracer/ThirdPartyLibs/SDL2-2.0.18/include/SDL_syswm.h"
 #endif
-#include "../thirdPartyLibs/SDL2-2.0.5/include/SDL.h"
-#include "../thirdPartyLibs/SDL2-2.0.5/include/SDL_opengl.h"
+#include "../../LittleRayTracer/ThirdPartyLibs/SDL2-2.0.18/include/SDL.h"
+
+#include "../../LittleRayTracer/ThirdPartyLibs/SDL2-2.0.18/include/SDL_opengl.h"
 
 
 // GLM 
 #define GLM_FORCE_SWIZZLE
-#include "../ThirdPartyLibs/glm/glm/glm.hpp"
-#include "../ThirdPartyLibs/glm/glm/gtc/type_ptr.hpp"
-#include "../ThirdPartyLibs/glm/glm/detail/_swizzle.hpp"
-#include "../ThirdPartyLibs/glm/glm/gtc/matrix_transform.hpp"
-#include "../ThirdPartyLibs/glm/glm/gtc/matrix_access.hpp"
-#include "../ThirdPartyLibs/glm/glm/gtc/matrix_inverse.hpp"
-#include "../ThirdPartyLibs/glm/glm/gtc/quaternion.hpp"
+#include "../../LittleRayTracer/ThirdPartyLibs/glm/glm/glm.hpp"
+#include "../../LittleRayTracer/ThirdPartyLibs/glm/glm/gtc/type_ptr.hpp"
+#include "../../LittleRayTracer/ThirdPartyLibs/glm/glm/detail/_swizzle.hpp"
+#include "../../LittleRayTracer/ThirdPartyLibs/glm/glm/gtc/matrix_transform.hpp"
+#include "../../LittleRayTracer/ThirdPartyLibs/glm/glm/gtc/matrix_access.hpp"
+#include "../../LittleRayTracer/ThirdPartyLibs/glm/glm/gtc/matrix_inverse.hpp"
+#include "../../LittleRayTracer/ThirdPartyLibs/glm/glm/gtc/quaternion.hpp"
 
 // STD
 #include <filesystem>
