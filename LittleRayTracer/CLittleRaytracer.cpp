@@ -102,16 +102,17 @@ int LittleRaytracer::init()
 		sphere->getMaterialPtr()->lightIntensity = 200.0f;
 		m_objectList.push_back(sphere);
 	}
-	/*
+	
 	{
 		ComplexObj* obj = new ComplexObj("Man.obj");
-		obj->getMaterialPtr()->color = glm::vec3(0.8f, 0.8f, 0.8f);
+		obj->setPosition(glm::vec3(0.75f, 0.75f, -1.5f));
+		obj->getMaterialPtr()->color = glm::vec3(1.0f, 0.0f, 0.0f);
 		obj->getMaterialPtr()->roughness = 0.2f;
 		obj->getMaterialPtr()->metallic = 0.0f;
-		obj->getMaterialPtr()->lightIntensity = 0.0f;
+		obj->getMaterialPtr()->lightIntensity = 100.0f;
 		m_objectList.push_back(obj);
 	}
-	*/
+
 
 	
 
