@@ -58,9 +58,10 @@ int LittleRaytracer::init()
 	SDL_RenderPresent(m_renderer);
 
 	m_camera = new Camera();
-
+	/*
 
 	{
+		
 		Sphere* sphere = new Sphere();
 		sphere->setPosition(glm::vec3(-0.25f, 0.f, -1.8f));
 		sphere->setRadius(0.25f);
@@ -71,6 +72,7 @@ int LittleRaytracer::init()
 
 		m_objectList.push_back(sphere);
 	}
+	
 	{
 		Sphere* sphere = new Sphere();
 		sphere->setPosition(glm::vec3(0.2f, 0.f, -2.1f));
@@ -81,6 +83,7 @@ int LittleRaytracer::init()
 		sphere->getMaterialPtr()->lightIntensity = 0.f;
 		m_objectList.push_back(sphere);
 	}
+	*/
 	{
 		Sphere* sphere = new Sphere();
 		sphere->setPosition(glm::vec3(-0.25f, -50.25, -2.2f));
@@ -104,16 +107,17 @@ int LittleRaytracer::init()
 	}
 
 	{
-		ComplexObj* obj = new ComplexObj("Man.obj");
-		obj->setPosition(glm::vec3(0.75f, 0.75f, -1.5f));
-		obj->getMaterialPtr()->color = glm::vec3(1.0f, 0.0f, 0.0f);
-		obj->getMaterialPtr()->roughness = 0.2f;
-		obj->getMaterialPtr()->metallic = 0.0f;
-		obj->getMaterialPtr()->lightIntensity = 100.0f;
+		ComplexObj* obj = new ComplexObj("Triangle.obj");
+
+		obj->setPosition(glm::vec3(-1.25f, 0.0f, -5.0f));
+			
+		obj->getMaterialPtr()->color = glm::vec3(0.3, 0.05, 0.1);
+		obj->getMaterialPtr()->roughness = 1.0f;
+		obj->getMaterialPtr()->metallic = 1.0f;
+		obj->getMaterialPtr()->lightIntensity = 10.0f;
 		m_objectList.push_back(obj);
 	}
-
-
+	
 
 
 
@@ -199,6 +203,7 @@ void LittleRaytracer::updateScreen()
 	else
 	{
 		memcpy(texture_pixels, m_pixels, texture_pitch * m_resolution.y);
+	
 	}
 	SDL_UnlockTexture(m_screenTexture);
 	SDL_RenderCopy(m_renderer, m_screenTexture, NULL, NULL);

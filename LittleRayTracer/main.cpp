@@ -6,7 +6,7 @@
 int main(int argc, char** argv)
 {
 	// Résolution de la fenêtre : 640x480 par défaut
-	glm::ivec2 res = glm::ivec2(640, 480);
+	glm::ivec2 res = glm::ivec2(1800, 1800);
 	if (argc > 2)
 	{
 		// Peut être modifiée via les paramètres en ligne de commande

@@ -11,11 +11,17 @@
 bool ComplexObj::loadFromOBJ(const std::string& path)
 {
     std::ifstream file(path);
-    if (!file.is_open()) return false;
+    if (!file.is_open())
+    {
+
+       
+        return false;
+    }
 
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;
     std::vector<glm::vec2> texcoords;
+
     m_vertexArray.clear();
     m_faceArray.clear();
 
@@ -26,30 +32,51 @@ bool ComplexObj::loadFromOBJ(const std::string& path)
         std::string token;
         iss >> token;
 
-        if (token == "v") { glm::vec3 v; iss >> v.x >> v.y >> v.z; positions.push_back(v); }
-        else if (token == "vn") { glm::vec3 n; iss >> n.x >> n.y >> n.z; normals.push_back(n); }
-        else if (token == "vt") { glm::vec2 uv; iss >> uv.x >> uv.y; texcoords.push_back(uv); }
+        if (token == "v") {
+            glm::vec3 v;
+            iss >> v.x >> v.y >> v.z;
+            positions.push_back(v);
+        }
+        else if (token == "vn") {
+            glm::vec3 n;
+            iss >> n.x >> n.y >> n.z;
+            normals.push_back(n);
+        }
+        else if (token == "vt") {
+            glm::vec2 uv;
+            iss >> uv.x >> uv.y;
+            texcoords.push_back(uv);
+        }
         else if (token == "f")
         {
-            unsigned int idx[3];
-            iss >> idx[0] >> idx[1] >> idx[2];
-            face f; f.index[0] = idx[0] - 1; f.index[1] = idx[1] - 1; f.index[2] = idx[2] - 1;
+            face f;
+            for (int i = 0; i < 3; i++)
+            {
+                std::string vert;
+                iss >> vert;
+                std::replace(vert.begin(), vert.end(), '/', ' ');
+
+                std::istringstream viss(vert);
+                unsigned int vi = 0, ti = 0, ni = 0;
+                viss >> vi >> ti >> ni;
+
+                f.index[i] = vi - 1; 
+            }
             m_faceArray.push_back(f);
         }
     }
 
-    // remplir m_vertexArray
-    for (const auto& f : m_faceArray)
+    m_vertexArray.clear();
+    for (const auto& pos : positions)
     {
-        for (int i = 0; i < 3; i++)
-        {
-            vertex v;
-            v.m_position = positions[f.index[i]];
-            if (!texcoords.empty()) v.m_texcoord = texcoords[f.index[i]];
-            if (!normals.empty()) v.m_normal = normals[f.index[i]];
-            m_vertexArray.push_back(v);
-        }
+        vertex v;
+        v.m_position = pos;
+
+        m_vertexArray.push_back(v);
     }
+
+    std::cout << "OBJ loaded: " << m_vertexArray.size() << " vertices, "
+        << m_faceArray.size() << " faces.\n";
 
     return true;
 }
@@ -100,36 +127,71 @@ RayCastResult ComplexObj::raycastTriangle(Ray& p_ray, glm::vec2 p_tInterval,
 
 RayCastResult ComplexObj::raycast(Ray& p_ray, glm::vec2 p_tInterval)
 {
+    RayCastResult result;
+    float closestT = p_tInterval.y;
 
-    RayCastResult closestHit;
-    closestHit.t = std::numeric_limits<float>::max();
-    closestHit.hit = false;
+    // Matrice monde de l'objet
+    glm::mat4 modelMatrix = getModel();
 
-    for (const auto& f : m_faceArray)
+    for (const face& f : m_faceArray)
     {
-        const vertex& vA = m_vertexArray[f.index[0]];
-        const vertex& vB = m_vertexArray[f.index[1]];
-        const vertex& vC = m_vertexArray[f.index[2]];
+        // Sommets locaux
+        glm::vec3 v0 = m_vertexArray[f.index[0]].m_position;
+        glm::vec3 v1 = m_vertexArray[f.index[1]].m_position;
+        glm::vec3 v2 = m_vertexArray[f.index[2]].m_position;
 
-        RayCastResult hit = raycastTriangle(p_ray, p_tInterval, vA.m_position, vB.m_position, vC.m_position);
-        if (hit.hit && hit.t < closestHit.t)
-        {
-            closestHit = hit;
+        // Passage en espace monde
+        glm::vec3 p0 = glm::vec3(modelMatrix * glm::vec4(v0, 1.0f));
+        glm::vec3 p1 = glm::vec3(modelMatrix * glm::vec4(v1, 1.0f));
+        glm::vec3 p2 = glm::vec3(modelMatrix * glm::vec4(v2, 1.0f));
 
-            // normale interpolée
-            closestHit.hitNormal = glm::normalize(
-                (1.0f - hit.uvw.x - hit.uvw.y) * vA.m_normal +
-                hit.uvw.x * vB.m_normal +
-                hit.uvw.y * vC.m_normal
-            );
+        // --- Möller–Trumbore ---
+        const float EPSILON = 1e-6f;
 
-            // coordonnées UV interpolées
-            closestHit.uvw =
-                (1.0f - hit.uvw.x - hit.uvw.y) * glm::vec3(vA.m_texcoord, 0.0f) +
-                hit.uvw.x * glm::vec3(vB.m_texcoord, 0.0f) +
-                hit.uvw.y * glm::vec3(vC.m_texcoord, 0.0f);
-        }
+        glm::vec3 edge1 = p1 - p0;
+        glm::vec3 edge2 = p2 - p0;
+
+        glm::vec3 h = glm::cross(p_ray.direction, edge2);
+        float a = glm::dot(edge1, h);
+
+        if (fabs(a) < EPSILON)
+            continue;
+
+        float f_inv = 1.0f / a;
+        glm::vec3 s = p_ray.origin - p0;
+        float u = f_inv * glm::dot(s, h);
+
+        if (u < 0.0f || u > 1.0f)
+            continue;
+
+        glm::vec3 q = glm::cross(s, edge1);
+        float v = f_inv * glm::dot(p_ray.direction, q);
+
+        if (v < 0.0f || u + v > 1.0f)
+            continue;
+
+        float t = f_inv * glm::dot(edge2, q);
+
+        if (t < p_tInterval.x || t > closestT)
+            continue;
+
+        // --- HIT ---
+        closestT = t;
+
+        result.hit = true;
+        result.t = t;
+        result.hitPosition = p_ray.origin + t * p_ray.direction;
+
+        glm::vec3 normal = glm::normalize(glm::cross(edge1, edge2));
+        result.frontFace = glm::dot(p_ray.direction, normal) < 0.0f;
+        result.hitNormal = result.frontFace ? normal : -normal;
+
+        result.collider = this;
+        result.material = getMaterialPtr();
+
+        // barycentriques (UVW)
+        result.uvw = glm::vec3(1.0f - u - v, u, v);
     }
 
-    return closestHit;
+    return result;
 }
