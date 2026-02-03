@@ -3,11 +3,9 @@
 #include <sstream>
 #include <iostream>
 #include <limits>
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/norm.hpp>    // normalize etc
-#include <glm/gtc/matrix_transform.hpp>
-
+#include "./ThirdPartyLibs/glm/glm/glm.hpp"
+#include "./ThirdPartyLibs/glm/glm/gtx/norm.hpp" 
+#include "./ThirdPartyLibs/glm/glm/gtc/type_ptr.hpp"
 
 //Constructeur ==> cf. CMesh
 bool ComplexObj::loadFromOBJ(const std::string& path)
@@ -93,9 +91,10 @@ RayCastResult ComplexObj::raycastTriangle(Ray& p_ray, glm::vec2 p_tInterval,
     RayCastResult result;
     result.hit = true;
     result.t = t;
-    result.position = p_ray.origin + t * p_ray.direction;
-    result.normal = glm::normalize(glm::cross(edge1, edge2));
-    result.u = u; result.v = v;
+    result.hitPosition = p_ray.origin + t * p_ray.direction;
+    result.hitNormal = glm::normalize(glm::cross(edge1, edge2));
+    result.uvw.x = u;
+    result.uvw.y = v;
     return result;
 }
 
@@ -116,15 +115,19 @@ RayCastResult ComplexObj::raycast(Ray& p_ray, glm::vec2 p_tInterval)
         if (hit.hit && hit.t < closestHit.t)
         {
             closestHit = hit;
-            closestHit.normal = glm::normalize(
-                (1.0f - hit.u - hit.v) * vA.m_normal +
-                hit.u * vB.m_normal +
-                hit.v * vC.m_normal
+
+            // normale interpolée
+            closestHit.hitNormal = glm::normalize(
+                (1.0f - hit.uvw.x - hit.uvw.y) * vA.m_normal +
+                hit.uvw.x * vB.m_normal +
+                hit.uvw.y * vC.m_normal
             );
-            closestHit.uv =
-                (1.0f - hit.u - hit.v) * vA.m_texcoord[0] +
-                hit.u * vB.m_texcoord[0] +
-                hit.v * vC.m_texcoord[0];
+
+            // coordonnées UV interpolées
+            closestHit.uvw =
+                (1.0f - hit.uvw.x - hit.uvw.y) * glm::vec3(vA.m_texcoord, 0.0f) +
+                hit.uvw.x * glm::vec3(vB.m_texcoord, 0.0f) +
+                hit.uvw.y * glm::vec3(vC.m_texcoord, 0.0f);
         }
     }
 
