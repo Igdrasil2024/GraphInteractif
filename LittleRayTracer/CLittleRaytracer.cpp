@@ -58,7 +58,6 @@ int LittleRaytracer::init()
 	SDL_RenderPresent(m_renderer);
 
 	m_camera = new Camera();
-	/*
 
 	{
 		
@@ -83,7 +82,7 @@ int LittleRaytracer::init()
 		sphere->getMaterialPtr()->lightIntensity = 0.f;
 		m_objectList.push_back(sphere);
 	}
-	*/
+
 	{
 		Sphere* sphere = new Sphere();
 		sphere->setPosition(glm::vec3(-0.25f, -50.25, -2.2f));
@@ -106,6 +105,8 @@ int LittleRaytracer::init()
 		m_objectList.push_back(sphere);
 	}
 
+	//objet 3D complexe
+	/*
 	{
 		ComplexObj* obj = new ComplexObj("Triangle.obj");
 
@@ -117,6 +118,7 @@ int LittleRaytracer::init()
 		obj->getMaterialPtr()->lightIntensity = 10.0f;
 		m_objectList.push_back(obj);
 	}
+	*/
 	
 
 
@@ -171,6 +173,11 @@ void LittleRaytracer::updatePixelOnScreen(int p_x, int p_y, glm::vec4 p_rgbAcc, 
 		SDL_RenderPresent(m_renderer);
 }
 
+glm::vec3 toneMapExtendedReinhard(const glm::vec3& colorHDR, float whitePoint)
+{
+	glm::vec3 numerator = colorHDR * (1.0f + (colorHDR / (whitePoint * whitePoint)));
+	return numerator / (1.0f + colorHDR);
+}
 
 void LittleRaytracer::updateScreen()
 {
@@ -185,6 +192,14 @@ void LittleRaytracer::updateScreen()
 				m_pixels[y * m_resolution.x + x] = 0;
 			else
 			{
+				//tonemapping 
+				
+				glm::vec3 c = pixelAcc.xyz() / pixelAcc.w;
+
+				float whitePoint = 4.0f; 
+				c = toneMapExtendedReinhard(c, whitePoint);
+				
+				//gamma correction de la correction
 				glm::vec3 c = pixelAcc.xyz() / pixelAcc.w;
 				for (int i = 0; i < 3; i++)
 					c[i] = glm::pow(glm::clamp(c[i], 0.0f, 1.0f), 1.0f / m_gamma);
