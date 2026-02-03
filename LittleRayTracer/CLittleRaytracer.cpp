@@ -13,7 +13,7 @@ LittleRaytracer::LittleRaytracer(glm::ivec2 p_outputRes) :
 	m_camera(NULL),
 	m_gamma(1.0f),
 	m_pixels(NULL),
-	m_running (false),
+	m_running(false),
 	m_pixelsAcc(nullptr)
 {
 }
@@ -27,7 +27,7 @@ LittleRaytracer::~LittleRaytracer()
 	if (m_pixelsAcc)
 		delete[] m_pixelsAcc;
 
-	if(m_screenTexture)
+	if (m_screenTexture)
 		SDL_DestroyTexture(m_screenTexture);
 
 	delete m_camera;
@@ -35,9 +35,9 @@ LittleRaytracer::~LittleRaytracer()
 	for (int i = 0; i < m_objectList.size(); i++)
 		delete m_objectList[i];
 
-	if(m_renderer)
+	if (m_renderer)
 		SDL_DestroyRenderer(m_renderer);
-	if(m_window)
+	if (m_window)
 		SDL_DestroyWindow(m_window);
 	SDL_Quit();
 }
@@ -67,7 +67,7 @@ int LittleRaytracer::init()
 		sphere->getMaterialPtr()->color = glm::vec3(0.3, 0.05, 0.1);
 		sphere->getMaterialPtr()->roughness = 0.1f;
 		sphere->getMaterialPtr()->metallic = 0.5f;
-		sphere->getMaterialPtr()->lightIntensity =10.0f;
+		sphere->getMaterialPtr()->lightIntensity = 10.0f;
 
 		m_objectList.push_back(sphere);
 	}
@@ -102,7 +102,7 @@ int LittleRaytracer::init()
 		sphere->getMaterialPtr()->lightIntensity = 200.0f;
 		m_objectList.push_back(sphere);
 	}
-	
+
 	{
 		ComplexObj* obj = new ComplexObj("Man.obj");
 		obj->setPosition(glm::vec3(0.75f, 0.75f, -1.5f));
@@ -114,7 +114,7 @@ int LittleRaytracer::init()
 	}
 
 
-	
+
 
 
 
@@ -138,7 +138,7 @@ int LittleRaytracer::init()
 	m_pixelsAcc = new glm::vec4[m_resolution.x * m_resolution.y];
 
 	memset(m_pixels, 0, m_resolution.x * m_resolution.y);
-	memset(m_pixelsAcc, 0, m_resolution.x * m_resolution.y*sizeof(glm::vec4));
+	memset(m_pixelsAcc, 0, m_resolution.x * m_resolution.y * sizeof(glm::vec4));
 
 
 	return 0;
@@ -170,19 +170,20 @@ void LittleRaytracer::updatePixelOnScreen(int p_x, int p_y, glm::vec4 p_rgbAcc, 
 
 void LittleRaytracer::updateScreen()
 {
+#pragma omp parallel for schedule(dynamic)
 	for (int x = 0; x < m_resolution.x; x++)
 	{
 		for (int y = 0; y < m_resolution.y; y++)
 		{
 			glm::vec4 pixelAcc = m_pixelsAcc[y * m_resolution.x + x];
-			
+
 			if (pixelAcc.w == 0.0f)
 				m_pixels[y * m_resolution.x + x] = 0;
 			else
 			{
 				glm::vec3 c = pixelAcc.xyz() / pixelAcc.w;
 				for (int i = 0; i < 3; i++)
-					c[i] = glm::pow(glm::clamp(c[i],0.0f,1.0f), 1.0f / m_gamma);
+					c[i] = glm::pow(glm::clamp(c[i], 0.0f, 1.0f), 1.0f / m_gamma);
 
 				m_pixels[y * m_resolution.x + x] = ((unsigned char)(c.b * 255.99) << 16) + ((unsigned char)(c.g * 255.99) << 8) + ((unsigned char)(c.r * 255.99));
 			}
@@ -191,13 +192,13 @@ void LittleRaytracer::updateScreen()
 
 	int texture_pitch = 0;
 	void* texture_pixels = NULL;
-	if (SDL_LockTexture(m_screenTexture, NULL, &texture_pixels, &texture_pitch) != 0) 
+	if (SDL_LockTexture(m_screenTexture, NULL, &texture_pixels, &texture_pitch) != 0)
 	{
 		SDL_Log("Unable to lock texture: %s", SDL_GetError());
 	}
-	else 
+	else
 	{
-		memcpy(texture_pixels, m_pixels, texture_pitch *m_resolution.y);
+		memcpy(texture_pixels, m_pixels, texture_pitch * m_resolution.y);
 	}
 	SDL_UnlockTexture(m_screenTexture);
 	SDL_RenderCopy(m_renderer, m_screenTexture, NULL, NULL);
@@ -212,7 +213,7 @@ void LittleRaytracer::save()
 	SDL_RenderReadPixels(m_renderer, NULL, SDL_PIXELFORMAT_ARGB8888, sshot->pixels, sshot->pitch);
 	std::string screenshotName = "screenshot_";
 	int screenshotIndex = 0;
-	while(std::filesystem::exists(screenshotName + std::to_string(screenshotIndex) + ".bmp"))
+	while (std::filesystem::exists(screenshotName + std::to_string(screenshotIndex) + ".bmp"))
 		screenshotIndex++;
 	SDL_SaveBMP(sshot, (screenshotName + std::to_string(screenshotIndex) + ".bmp").c_str());
 	SDL_FreeSurface(sshot);
@@ -220,10 +221,10 @@ void LittleRaytracer::save()
 
 void LittleRaytracer::run()
 {
-	m_running = init()==0;
+	m_running = init() == 0;
 
 	if (m_camera)
-		m_camera->initRenderWithResolution(m_resolution,1,1, &m_objectList);
+		m_camera->initRenderWithResolution(m_resolution, 1, 1, &m_objectList);
 
 
 	glm::ivec2 currentPixelCoordinates = glm::vec2(0, 0);
@@ -238,44 +239,44 @@ void LittleRaytracer::run()
 		{
 			switch (event.type)
 			{
-				case SDL_QUIT:
-					// Quit
+			case SDL_QUIT:
+				// Quit
+				m_running = false;
+				break;
+			case SDL_KEYDOWN:
+			{
+				switch (event.key.keysym.sym)
+				{
+				case SDLK_ESCAPE:
+					// quit
 					m_running = false;
 					break;
-				case SDL_KEYDOWN:
+				case SDLK_SPACE:
 				{
-					switch (event.key.keysym.sym)
-					{
-					case SDLK_ESCAPE:
-						// quit
-						m_running = false;
-						break;
-					case SDLK_SPACE:
-					{
-						save();
-					}
+					save();
+				}
+				break;
+				case SDLK_RETURN:
+					// On recommence depuis le début
+					memset(m_pixels, 0, m_resolution.x * m_resolution.y * sizeof(uint32_t));
+					memset(m_pixelsAcc, 0, m_resolution.x * m_resolution.y * sizeof(glm::vec4));
+
+					currentPixelCoordinates = glm::vec2(0, 0);
+					numFrame = 1;
+					updateScreen();
 					break;
-					case SDLK_RETURN:
-						// On recommence depuis le début
-						memset(m_pixels, 0, m_resolution.x * m_resolution.y * sizeof(uint32_t));
-						memset(m_pixelsAcc, 0, m_resolution.x * m_resolution.y * sizeof(glm::vec4));
-
-						currentPixelCoordinates = glm::vec2(0, 0);
-						numFrame = 1;
-						updateScreen();
-						break;
-					case SDLK_UP:
-						m_gamma += 0.1f;
-						m_gamma = glm::min(5.0f, m_gamma);
-						break;
-					case SDLK_DOWN:
-						m_gamma -= 0.1f;
-						m_gamma = glm::max(0.1f, m_gamma);
-						break;
-
-					}
+				case SDLK_UP:
+					m_gamma += 0.1f;
+					m_gamma = glm::min(5.0f, m_gamma);
+					break;
+				case SDLK_DOWN:
+					m_gamma -= 0.1f;
+					m_gamma = glm::max(0.1f, m_gamma);
+					break;
 
 				}
+
+			}
 			}
 		}
 
@@ -284,13 +285,13 @@ void LittleRaytracer::run()
 
 		// on rend un pixel 
 		//glm::vec3 color = glm::ivec3(glm::linearRand(0, 1), glm::linearRand(0, 1), glm::linearRand(0, 1));
-		glm::vec3 color = m_camera->evaluatePixelColor(currentPixelCoordinates,4);
+		glm::vec3 color = m_camera->evaluatePixelColor(currentPixelCoordinates, 4);
 		m_pixelsAcc[currentPixelCoordinates.y * m_resolution.x + currentPixelCoordinates.x] += glm::vec4(color, 1);
-		
+
 		// on se décale d'un pixel à droite
 		currentPixelCoordinates.x++;
 		// Si on est au bout de la ligne on passe à la ligne
-		if (currentPixelCoordinates.x == m_resolution.x)  
+		if (currentPixelCoordinates.x == m_resolution.x)
 		{
 			currentPixelCoordinates.x = 0;
 			currentPixelCoordinates.y++;
@@ -298,7 +299,7 @@ void LittleRaytracer::run()
 			// si on est en bas de l'image, on l'affiche et on revient au début
 			if (currentPixelCoordinates.y >= m_resolution.y)
 			{
-				std::string title = "FL(c) [" + std::to_string(numFrame) + "][" + std::to_string((int)(m_gamma*10)) +"]";
+				std::string title = "FL(c) [" + std::to_string(numFrame) + "][" + std::to_string((int)(m_gamma * 10)) + "]";
 				SDL_SetWindowTitle(m_window, title.c_str());
 				updateScreen();
 				currentPixelCoordinates = glm::vec2(0, 0);

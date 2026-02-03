@@ -14,7 +14,7 @@
 #include <fstream>
 #include <string>
 #include <filesystem>
-
+#include <omp.h>
 
 #define SKY_COLOR			glm::vec3(1.8f,2.0f,2.0f)
 #define GROUND_COLOR		glm::vec3(0.0f,0.0f,0.1f)
